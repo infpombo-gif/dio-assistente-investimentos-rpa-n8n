@@ -1,0 +1,130 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "clientes-investimentos",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e12d5331-1105-4760-a9e4-d9d033d60be2",
+      "name": "Webhook",
+      "webhookId": "cbd65e47-b0b4-40f8-b2b8-aff36a53dc77"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst entrada = $input.first().json;\nconst clientes = entrada.body?.clientes ?? entrada.clientes;\n\nif (!Array.isArray(clientes)) {\n  throw new Error(\"A lista de clientes não foi encontrada na entrada.\");\n}\n\nreturn clientes.map(cliente => ({\n  json: {\n    nome: cliente.nome,\n    email: cliente.email,\n    saldo: cliente.saldo,\n    perfil: cliente.perfil\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "b3837b9d-9490-4299-8669-d7039067009c",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/digitalinnovationone/dio-lab-assistente-investimentos-rpa-n8n/main/docs/data.csv",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "id": "dce29942-3923-41ed-b8e5-dc90465fd965",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=\nVocê é um assistente que prepara mensagens educativas sobre investimentos.\n\nAnalise os dados do cliente abaixo:\nNome: {{ $json.nome }}\nPerfil: {{ $json.perfil }}\nSaldo informado: {{ $json.saldo }}\n\nEscreva uma mensagem curta e personalizada, em português do Brasil,\nexplicando de forma educativa como o perfil de investimento influencia\na tolerância a riscos. Não prometa rentabilidade nem indique ativos\nespecíficos. Termine sugerindo que o cliente avalie seus objetivos\ne procure um profissional habilitado antes de tomar decisões.\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        0
+      ],
+      "id": "5acb5074-3aa6-4b88-b5e3-299f717a3e7a",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "J0lYzC1vmxCuoNKn",
+          "name": "OpenAI account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "9e2acbe1-8c9e-4a53-8498-a7e1e31d19e0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ca6dd19cc3193669d55db3531e92ec8717539f3b05791e6f39de53c8febfb910"
+  },
+  "nodeGroups": [],
+  "id": "Y0hVs4wOCcVIMnpk",
+  "tags": []
+}
